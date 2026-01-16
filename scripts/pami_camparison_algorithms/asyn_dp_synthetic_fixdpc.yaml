@@ -1,0 +1,48 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 0
+federate:
+  mode: standalone
+  total_round_num: 1000
+  sample_client_num: 150
+  client_num: 1000
+  merge_test_data: True
+#  join_in_info: ['num_sample']
+dataloader:
+  batch_size: 64
+grad:
+  grad_clip: 5
+data:
+  root: data/
+  type: synthetic
+  subsample: 1.0
+  splits: [0.8,0.0,0.2]
+model:
+  type: lr
+  out_channels: 2
+train:
+  local_update_steps: 1
+  batch_or_epoch: batch
+  optimizer:
+    lr: 1
+    weight_decay: 0.0
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: 'general' #nlptrainer
+eval:
+  freq: 50
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 100 # 9*6
+  staleness_toleration: 1000
+median:
+  use: True
+  n2s: 0.8

@@ -1,0 +1,71 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 0
+seed: 12345
+federate:
+  mode: standalone
+  total_round_num: 2000
+  merge_test_data: True
+  client_num: 180
+wandb:
+  use: False
+  name_project: femnist-usrsel-test
+  name_user: gogll
+  online_track: True
+  client_train_info: True
+data:
+  root: data/
+  type: leaf_femnist
+  splits: [ 0.6,0.2,0.2]
+  splitter: 'lda'
+  splitter_args: [ { 'alpha': 1 } ]
+  transform: [['ToTensor'], ['Normalize', {'mean': [0.9637], 'std': [0.1592]}]]
+dataloader:
+  batch_size: 32
+model:
+  type: convnet2
+  hidden: 2048
+  out_channels: 62
+train:
+  local_update_steps: 1
+  batch_or_epoch: epoch
+  optimizer:
+    lr: 0.02
+    weight_decay: 0.0
+grad:
+  grad_clip: 4
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: cvtrainer
+eval:
+  freq: 20
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  min_received_num: 30
+  staleness_toleration: 1000
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+usrsele:
+  use: False
+  strategy: 'combi' # 三种选择，fast, combi, coor_group
+  factor: 0.8 # 用户抽选比例
+usrsele_compa_hfl:
+  use: False
+  factor: 0.7
+usrsele_compa_schandagg:
+  use: False
+  factor: 0.5 # selecting factor
+  gamma: 0.8
+usrsele_compa_freqandage:
+  use: False
+  factor: 0.7
+  gamma: 1.2
+usrsele_compa_kafl:
+  use: False
+  rho: 0.5
+usrsele_compa_wkafl:
+  use: True

@@ -1,0 +1,62 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 0
+federate:
+  mode: standalone
+  total_round_num: 1000
+  sample_client_num: 30
+  client_num: 118
+  merge_test_data: False
+#  sample_client_rate: 0.2
+data:
+  root: data/
+  type: shakespeare
+  subsample: 0.1
+  splits: [0.8,0.0,0.2]
+model:
+  type: lstm
+  in_channels: 80
+  out_channels: 80
+  embed_size: 8
+  hidden: 256
+  dropout: 0.0
+train:
+  local_update_steps: 1
+  batch_or_epoch: epoch
+  optimizer:
+    lr: 1
+    weight_decay: 0.0
+criterion:
+  type: character_loss
+trainer:
+  type: nlptrainer
+eval:
+  freq: 50
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 30
+  staleness_toleration: 1000
+adaclip1:
+  use: True
+  beta_1: 0.99 # 超参，可调
+  beta_2: 0.9 # 超参，可调
+  h_1: 1e-8 # 超参，可调
+  h_2: 1e-8 # 超参，可调
+  clipbound: 1. # 裁剪大小
+  n2s: 0.8 # 噪声与信号比
+  lr: 1 # 学习率
+  M: [] # 存储中间参量，每层的均值
+  S: [] # 存储中间参量，每层的标准差
+wandb:
+  use: True
+  name_user: gogll2218
+  name_project: shakes_silo
+  online_track: True
+  client_train_info: True

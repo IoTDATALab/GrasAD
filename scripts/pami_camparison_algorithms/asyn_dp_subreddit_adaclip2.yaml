@@ -1,0 +1,50 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 10
+federate:
+  mode: standalone
+  total_round_num: 600
+  sample_client_num: 15
+  merge_test_data: True
+data:
+  root: data/
+  type: subreddit
+  subsample: 1.0
+dataloader:
+  batch_size: 20
+model:
+  type: lstm
+  in_channels: 10000
+  out_channels: 10000
+  hidden: 256
+  embed_size: 200
+  dropout: 0.0
+train:
+  local_update_steps: 1
+  optimizer:
+    lr: 8
+    weight_decay: 0.0
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: nlptrainer
+eval:
+  freq: 30
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 8
+  staleness_toleration: 1000
+adaclip2:
+  use: True
+  quatile: 0.1  # 梯度裁剪与梯度大小比例
+  c: 0.5  # 隐私预算分配
+  clipbound: 5  # 梯度裁剪大小
+  n2s: 0.8 # 噪声与信号比
+  clipbound_us: 'Lin' # 梯度裁剪更新方式，可选'Geo'

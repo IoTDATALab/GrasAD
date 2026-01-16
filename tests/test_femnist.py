@@ -10,7 +10,6 @@ from federatedscope.core.auxiliaries.worker_builder import get_server_cls, get_c
 
 SAMPLE_CLIENT_NUM = 5
 
-
 class FEMNISTTest(unittest.TestCase):
     def setUp(self):
         print(('Testing %s.%s' % (type(self).__name__, self._testMethodName)))
@@ -32,7 +31,7 @@ class FEMNISTTest(unittest.TestCase):
         cfg.data.type = 'femnist'
         cfg.data.splits = [0.6, 0.2, 0.2]
         cfg.data.batch_size = 10
-        cfg.data.subsample = 0.05
+        cfg.data.subsample = 0.02
         cfg.data.transform = [['ToTensor'],
                               [
                                   'Normalize', {
@@ -44,6 +43,8 @@ class FEMNISTTest(unittest.TestCase):
         cfg.model.type = 'convnet2'
         cfg.model.hidden = 2048
         cfg.model.out_channels = 62
+
+        cfg.asyn.use = True
 
         cfg.train.optimizer.lr = 0.001
         cfg.train.optimizer.weight_decay = 0.0

@@ -1,0 +1,62 @@
+{
+ "cells": [],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "${KERNEL_SPEC_DISPLAY_NAME}",
+   "language": "${KERNEL_SPEC_LANGUAGE}",
+   "name": "${KERNEL_SPEC_NAME}"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  },
+  "pycharm": {
+   "stem_cell": {
+    "cell_type": "raw",
+    "source": [
+     "import matplotlib.pyplot as plt\n",
+     "import re\n",
+     "\n",
+     "# Read data\n",
+     "file_path = '/mnt/data/factor=0.3-celeba_nondp.txt'\n",
+     "rounds = []\n",
+     "test_acc = []\n",
+     "\n",
+     "with open(file_path, 'r') as file:\n",
+     "    for line in file:\n",
+     "        # Find round and test_acc in the line\n",
+     "        round_match = re.search(r\"'Round': (\\d+)\", line)\n",
+     "        test_acc_match = re.search(r\"'test_acc': ([0-9.]+)\", line)\n",
+     "        \n",
+     "        # If both round and test_acc are found, add them to the lists\n",
+     "        if round_match and test_acc_match:\n",
+     "            rounds.append(int(round_match.group(1)))\n",
+     "            test_acc.append(float(test_acc_match.group(1)))\n",
+     "\n",
+     "# Plotting\n",
+     "plt.figure(figsize=(10, 5))\n",
+     "plt.plot(rounds, test_acc, marker='o', color='b', label='Test Accuracy')\n",
+     "plt.xlabel('Round')\n",
+     "plt.ylabel('Test Accuracy')\n",
+     "plt.title('Test Accuracy vs. Round')\n",
+     "plt.legend()\n",
+     "plt.grid(True)\n",
+     "plt.show()\n"
+    ],
+    "metadata": {
+     "collapsed": false
+    }
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

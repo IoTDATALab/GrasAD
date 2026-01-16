@@ -1,0 +1,69 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 0
+seed: 2
+federate:
+  mode: standalone
+  total_round_num: 2000
+  sample_client_num: 32 # 18*6
+  merge_test_data: True
+  share_local_model: False
+  client_num: 800 #180*6
+#  sampler: 'uniform'
+#  resource_info_file: 'client_device_capacity'
+data:
+  root: data/
+  type: celeba
+  args: [{'download': True}]
+  splits: [0.8,0.0,0.2]
+#  subsample: 0.2
+  transform: [['ToTensor'], ['Normalize', {'mean': [0.4914, 0.4822, 0.4465], 'std': [0.2470, 0.2435, 0.2616]}]]
+#  splitter: 'lda'
+#  splitter_args: [{'alpha': 0.2}]
+dataloader:
+  batch_size: 64
+model:
+  type: vgg11
+#  hidden: 512
+  out_channels: 2
+train:
+  local_update_steps: 1
+  batch_or_epoch: batch
+  optimizer:
+    lr: 1
+    weight_decay: 0.0
+grad:
+  grad_clip: -1
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: cvtrainer
+eval:
+  freq: 50
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 16 # 9*6
+  staleness_toleration: 1000
+adaclip1:
+  use: True
+  beta_1: 0.99 # 超参，可调
+  beta_2: 0.9 # 超参，可调
+  h_1: 1e-10 # 超参，可调
+  h_2: 1e-9 # 超参，可调
+  clipbound: 1. # 裁剪大小
+  n2s: 0.8 # 噪声与信号比
+  lr: 1 # 学习率
+  M: [] # 存储中间参量，每层的均值
+  S: [] # 存储中间参量，每层的标准差
+wandb:
+  use: False
+  name_user: gogll2218
+  name_project: celeba_fixdps
+

@@ -1,0 +1,21 @@
+run_femnist_usrsele.sh: 行 2: cd..：未找到命令
+Traceback (most recent call last):
+  File "/newhome/liyanan/projects/FS/federatedscope/main.py", line 30, in <module>
+    init_cfg.merge_from_file(args.cfg_file)
+  File "/home/lyn/.conda/envs/fs/lib/python3.9/site-packages/federatedscope/core/configs/config.py", line 109, in merge_from_file
+    self.merge_from_other_cfg(cfg)
+  File "/home/lyn/.conda/envs/fs/lib/python3.9/site-packages/federatedscope/core/configs/config.py", line 124, in merge_from_other_cfg
+    _merge_a_into_b(cfg_other, self, self, [])
+  File "/home/lyn/.conda/envs/fs/lib/python3.9/site-packages/federatedscope/core/configs/yacs_config.py", line 539, in _merge_a_into_b
+    raise KeyError("Non-existent config key: {}".format(full_key))
+KeyError: 'Non-existent config key: usrsele_compa_hfl'
+Traceback (most recent call last):
+  File "/newhome/liyanan/projects/FS/federatedscope/main.py", line 30, in <module>
+    init_cfg.merge_from_file(args.cfg_file)
+  File "/home/lyn/.conda/envs/fs/lib/python3.9/site-packages/federatedscope/core/configs/config.py", line 109, in merge_from_file
+    self.merge_from_other_cfg(cfg)
+  File "/home/lyn/.conda/envs/fs/lib/python3.9/site-packages/federatedscope/core/configs/config.py", line 124, in merge_from_other_cfg
+    _merge_a_into_b(cfg_other, self, self, [])
+  File "/home/lyn/.conda/envs/fs/lib/python3.9/site-packages/federatedscope/core/configs/yacs_config.py", line 539, in _merge_a_into_b
+    raise KeyError("Non-existent config key: {}".format(full_key))
+KeyError: 'Non-existent config key: usrsele_compa_hfl'

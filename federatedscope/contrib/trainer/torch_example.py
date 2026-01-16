@@ -6,7 +6,7 @@ from federatedscope.core.trainers import BaseTrainer
 # Refer to `federatedscope.core.trainers.BaseTrainer` for interface.
 
 # Try with FEMNIST:
-#  python federatedscope/main.py --cfg scripts/example_configs/femnist.yaml \
+#  python federatedscope/main.py --cfg scripts/example_configs/femnist1.yaml \
 #  trainer.type mytorchtrainer federate.sample_client_rate 0.01 \
 #  federate.total_round_num 5 eval.best_res_update_round_wise_key test_loss
 

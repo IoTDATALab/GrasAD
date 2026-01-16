@@ -2,6 +2,7 @@ import copy
 import logging
 import sys
 import pickle
+import numpy
 
 from federatedscope.core.message import Message
 from federatedscope.core.communication import StandaloneCommManager, \
@@ -64,6 +65,9 @@ class Client(BaseClient):
                  *args,
                  **kwargs):
         super(Client, self).__init__(ID, state, config, model, strategy)
+
+        self.data = data
+
         # Register message handlers
         self._register_default_handlers()
 
@@ -378,7 +382,19 @@ class Client(BaseClient):
                         init_model=content, updated_model=model_para_all)
                 else:
                     shared_model_para = model_para_all
-
+                # 以下三行分别实现：1）训练集上的标签列表；2）从小到大标签的计算；3）标签的分布
+                # 62代表总的标签个数
+                label_list = [sample[1].item() for sample in self.data.train_data]
+                label_count = [label_list.count(i) for i in range(62)]
+                label_popu = [label_count[i]/sum(label_count) for i in range(62)]
+                # 如果是以下算法，则把标签占比的分布label_popu传给服务器
+                if (self.trainer.cfg.usrsele.use + self.trainer.cfg.usrsele_compa_schandagg.use
+                        + self.trainer.cfg.usrsele_compa_freqandage.use + self.trainer.cfg.usrsele_compa_kafl.use +
+                        self.trainer.cfg.usrsele_compa_hfl.use + self.trainer.cfg.usrsele_compa_aouprior.use
+                        + self.trainer.cfg.usrsele_compa_wkafl.use >= 1):
+                    content = (sample_size, shared_model_para, label_popu)
+                else:
+                    content = (sample_size, shared_model_para)
                 self.comm_manager.send(
                     Message(msg_type='model_para',
                             sender=self.ID,
@@ -387,7 +403,7 @@ class Client(BaseClient):
                             timestamp=self._gen_timestamp(
                                 init_timestamp=timestamp,
                                 instance_number=sample_size),
-                            content=(sample_size, shared_model_para)))
+                            content=content))
 
     def callback_funcs_for_assign_id(self, message: Message):
         """
@@ -422,10 +438,10 @@ class Client(BaseClient):
                                  self._cfg.dataloader.batch_size
                 else:
                     num_sample = self._cfg.train.local_update_steps * \
-                                 len(self.data['train'])
+                                 len(self.trainer.data.train_data)
                 join_in_info['num_sample'] = num_sample
                 if self._cfg.trainer.type == 'nodefullbatch_trainer':
-                    join_in_info['num_sample'] = self.data['data'].x.shape[0]
+                    join_in_info['num_sample'] = self.trainer.data.train_data.x.shape[0]
             elif requirement.lower() == 'client_resource':
                 assert self.comm_bandwidth is not None and self.comp_speed \
                        is not None, "The requirement join_in_info " \

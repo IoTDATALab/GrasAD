@@ -66,10 +66,15 @@ def init_nbafl_ctx(base_trainer):
     if cfg.trainer.type == 'nodefullbatch_trainer':
         num_train_data = sum(ctx.train_loader.dataset[0]['train_mask'])
     else:
-        num_train_data = ctx.num_train_data
-    ctx.nbafl_scale_u = cfg.nbafl.w_clip * cfg.federate.total_round_num * \
+        num_train_data = cfg.dataloader.batch_size * cfg.train.local_update_steps            #ctx.num_train_data
+    ctx.nbafl_scale_u = cfg.nbafl.w_clip * cfg.asyn.min_received_num / cfg.federate.client_num * cfg.federate.total_round_num *\
         cfg.nbafl.constant / num_train_data / \
         cfg.nbafl.epsilon
+    print('scale of nbafl in upload is ', ctx.nbafl_scale_u)
+
+    # ctx.nbafl_scale_u = cfg.nbafl.w_clip * cfg.federate.total_round_num * \
+    #     cfg.nbafl.constant / num_train_data / \
+    #     cfg.nbafl.epsilon
 
 
 # ---------------------------------------------------------------------- #
@@ -127,6 +132,7 @@ def _hook_inject_noise_in_upload(ctx):
             "scale": ctx.nbafl_scale_u
         }, p.device)
         p.data += noise
+    # print('scale of nbafl in upload is ', ctx.nbafl_scale_u)
 
 
 # Server
@@ -144,17 +150,32 @@ def inject_noise_in_broadcast(cfg, sample_client_num, model):
         # Inject noise
         L = cfg.federate.sample_client_num if cfg.federate.sample_client_num\
                                               > 0 else cfg.federate.client_num
-        if cfg.federate.total_round_num > np.sqrt(cfg.federate.client_num) * L:
+
+        b = - cfg.federate.total_round_num / cfg.nbafl.epsilon * \
+            np.log(1 - cfg.federate.client_num / cfg.federate.sample_client_num +
+                   cfg.federate.client_num / cfg.federate.sample_client_num *
+                   np.exp(-cfg.nbafl.epsilon/cfg.federate.total_round_num))
+        gamma = -np.log(1-cfg.federate.sample_client_num/cfg.federate.client_num *
+                        (1-np.exp(-cfg.nbafl.epsilon/(L*np.sqrt(cfg.federate.sample_client_num)))))
+        if cfg.federate.total_round_num > cfg.nbafl.epsilon / gamma:
             scale_d = 2 * cfg.nbafl.w_clip * cfg.nbafl.constant * np.sqrt(
-                np.power(cfg.federate.total_round_num, 2) -
-                np.power(L, 2) * cfg.federate.client_num) / (
-                    min(sample_client_num) * cfg.federate.client_num *
-                    cfg.nbafl.epsilon)
+                cfg.federate.total_round_num**2/ b**2 - L**2 * cfg.federate.sample_client_num
+            ) / (
+                min(sample_client_num) * cfg.federate.sample_client_num * cfg.nbafl.epsilon
+            )
+        #原来的代码
+        # if cfg.federate.total_round_num > np.sqrt(cfg.federate.client_num) * L:
+        #     scale_d = 2 * cfg.nbafl.w_clip * cfg.nbafl.constant * np.sqrt(
+        #         np.power(cfg.federate.total_round_num, 2) -
+        #         np.power(L, 2) * cfg.federate.client_num) / (
+        #             min(sample_client_num) * cfg.federate.client_num *
+        #             cfg.nbafl.epsilon)
             for p in model.parameters():
                 p.data += get_random("Normal", p.shape, {
                     "loc": 0,
                     "scale": scale_d
                 }, p.device)
+            print('scale_d of nbafl in downlink is ', scale_d)
 
 
 # def wrap_nbafl_server(server: Type[Server]) -> Type[Server]:

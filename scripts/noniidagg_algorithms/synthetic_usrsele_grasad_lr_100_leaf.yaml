@@ -1,0 +1,74 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 0
+seed: 12345
+federate:
+  mode: standalone
+  total_round_num: 2000
+  merge_test_data: True
+  client_num: 300
+#  sample_client_num: 50
+wandb:
+  use: False
+  name_project: synthetic-compari
+  name_user: gogll
+  online_track: True
+  client_train_info: True
+data:
+  root: data/
+  type: leaf_synthetic
+  splits: [ 0.6,0.2,0.2 ]
+  splitter: 'lda'
+  splitter_args: [ { 'alpha': 100 } ]
+dataloader:
+  batch_size: 64
+model:
+  type: lr
+#  hidden: 2048
+  out_channels: 2
+train:
+  local_update_steps: 1
+  batch_or_epoch: epoch
+  optimizer:
+    lr: 0.08
+    weight_decay: 0.0
+grad:
+  grad_clip: 4.0
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: 'general'
+eval:
+  freq: 20
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  min_received_num: 30 # num为180时设置0.167；num为18时设置0.5
+#  min_received_num: 15
+  staleness_toleration: 1000
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+usrsele:
+  use: True
+  strategy: 'fast' # 三种选择，fast, combi, coor_group
+  factor: 0.5 # 用户抽选比例 num为180时设置0.5, num为18时设置0.8
+  ablation: 'none' # fast-s，combi-s (不考虑用户基于累计历史分布的用户selection)；
+  #  fast-w, combi-w (不考虑用内外相似性调节weights); none
+usrsele_compa_hfl:
+  use: False
+  factor: 0.5
+usrsele_compa_schandagg:
+  use: False
+  gamma: 0.8
+usrsele_compa_freqandage:
+  use: False
+  factor: 0.7
+  gamma: 0.8
+usrsele_compa_kafl:
+  use: False
+  rho: 0.5
+usrsele_compa_aouprior:
+  use: False
+  factor: 0.5

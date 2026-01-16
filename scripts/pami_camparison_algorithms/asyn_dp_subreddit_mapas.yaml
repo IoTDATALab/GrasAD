@@ -1,0 +1,52 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 10
+federate:
+  mode: standalone
+  total_round_num: 600
+  sample_client_num: 15
+  merge_test_data: True
+data:
+  root: data/
+  type: subreddit
+  subsample: 1.0
+dataloader:
+  batch_size: 20
+model:
+  type: lstm
+  in_channels: 10000
+  out_channels: 10000
+  hidden: 256
+  embed_size: 200
+  dropout: 0.0
+train:
+  local_update_steps: 1
+  optimizer:
+    lr: 8.0
+    weight_decay: 0.0
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: nlptrainer
+eval:
+  freq: 30
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 8
+  staleness_toleration: 1000
+mapa:
+  use: True
+  grad_var: 5. # 梯度方差，可调
+  clipbound: 10 # 初始梯度裁剪上界， 可调
+  redcu_ratio: 0.8 # 衰减率
+  L_smooth: 0.0004 # 光滑度，可调
+  inital_loss_bound: 100 # 初始损失函数上界，可调
+  n2s: 0.8 # 噪声与信号比
+  style: 'sample' # 差分隐私对象，另一种为'client'

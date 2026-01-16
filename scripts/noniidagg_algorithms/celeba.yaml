@@ -1,0 +1,74 @@
+use_gpu: True
+device: 1
+early_stop:
+  patience: 0
+seed: 12345
+federate:
+  mode: standalone
+  total_round_num: 1000
+  merge_test_data: True
+  client_num: 180
+  #sample_client_num: 24
+wandb:
+  use: False
+  name_project: Test2
+  name_user: wmh10086
+  online_track: True
+  client_train_info: True
+data:
+  root: data/
+  type: celeba
+  #args: [{'download': True}]
+  splits: [0.6,0.2,0.2]
+  #subsample: 1.0
+  #transform: [['ToTensor'], ['Normalize', {'mean': [0.9637], 'std': [0.1592]}]]
+  #transform: [['ToTensor'], ['Normalize', {'mean': [0.4914], 'std': [0.2470]}]]
+  transform: [['ToTensor'], ['Normalize', {'mean': [0.4914, 0.4822, 0.4465], 'std': [0.2470, 0.2435, 0.2616]}]]
+dataloader:
+  batch_size: 5
+model:
+  type: vgg11
+  #hidden: 2048
+  out_channels: 2
+  #in_channels: 10000
+  #embed_size: 200
+train:
+  local_update_steps: 1
+  batch_or_epoch: batch
+  optimizer:
+    lr: 0.05
+    weight_decay: 0.0
+grad:
+  grad_clip: 4.0
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: cvtrainer
+eval:
+  freq: 20
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+#  min_received_rate: 0.5
+  min_received_num: 30 # 9*6
+  staleness_toleration: 1000
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+usrsele:
+  use: True
+  strategy: 'combi' # 三种选择，fast, combi, coor_group
+  factor: 0.5 # 用户抽选比例
+usrsele_compa_hfl:
+  use: False
+  factor: 0.8
+usrsele_compa_schandagg:
+  use: False
+  gamma: 1.2
+usrsele_compa_freqandage:
+  use: False
+  factor: 0.6
+  gamma: 1.2
+usrsele_compa_kafl:
+  use: False
+  rho: 0.5

@@ -1,0 +1,204 @@
+'''
+import numpy as np
+grad_var = 5.  # 梯度方差，可调
+clipbound = 30.  # 初始梯度裁剪上界， 可调
+redcu_ratio = 0.8  # 衰减率
+model_para_num = 9437886
+L_smooth = 0.004  # 光滑度，可调
+inital_loss_bound = 200.  # 初始损失函数上界，可调
+n2s = 0.8  # 噪声与信号比
+style = 'sample'  # 差分隐私对象，另一种为'client'
+tau = 20 # 平均过时大小
+batch_size = 70
+Itrs = 0
+
+def _mapa_lr_Itrs(grad_var, clipbound, redcu_ratio, L_smooth, n2s, model_para_num):
+    Delta_b = grad_var ** 2 / batch_size + model_para_num * \
+              (n2s * clipbound / batch_size) ** 2
+    P = max(2 * Delta_b / (redcu_ratio ** 2 * clipbound ** 2 * (tau + 1)), 1)
+    Stage_lr = 1 / (2 * P * L_smooth * (tau + 1))
+    print('Delta_b is {}, tau is {}, P is {}'.format(Delta_b, tau, P))
+    Stage_Itrs = np.ceil(4 * P ** 2 * L_smooth * (tau + 1) ** 2 * inital_loss_bound / Delta_b)
+    print('Stage_Itrs is {}'.format(Stage_Itrs))
+    Stage_Itrs = Stage_Itrs if Stage_Itrs > 1 else 1
+    return Stage_lr, Stage_Itrs
+
+Itrs_stage_list, Lr_stage_list, clipbound_list = [], [], []
+while Itrs <= 4000:
+    Stage_lr, Stage_Itrs = _mapa_lr_Itrs(grad_var, clipbound, redcu_ratio, L_smooth, n2s, model_para_num)
+    Itrs += Stage_Itrs
+    clipbound_list.append(clipbound)
+    clipbound *= redcu_ratio
+    Itrs_stage_list.append(Stage_Itrs)
+    Lr_stage_list.append(Stage_lr)
+
+print('各阶段迭代次数为', Itrs_stage_list)
+print('各阶段学习率为', Lr_stage_list)
+print('各阶段梯度裁剪为', clipbound_list)
+'''
+
+'''
+def _mapa_lr_Itrs(grad_var =5, clipbound=20, redcu_ratio=0.8, L_smooth=0.0001, n2s=0.8, model_para_num=9437886,
+                  inital_loss_bound=5, beta=2, tau_C=30, K=10, batch_size=64):
+    Delta_sig_tau = grad_var**2 / batch_size + model_para_num * (n2s * clipbound )**2 / (batch_size * tau_C)
+    Delta_b_K = grad_var**2/ batch_size +2*beta**2 + model_para_num * (n2s * clipbound )**2 / (batch_size * K)
+    gamma_1 = Delta_b_K * K**2/ (Delta_sig_tau * tau_C**2 * L_smooth)
+    gamma_2 = (redcu_ratio * clipbound)**2/(8 * L_smooth * Delta_b_K)
+    Stage_lr = min(gamma_1, gamma_2)
+    Stage_Itrs = max(np.ceil(8 * inital_loss_bound / (Stage_lr * redcu_ratio**2 * clipbound)), 1)
+    return Stage_lr, Stage_Itrs
+'''
+import numpy as np
+import matplotlib.pyplot as plt
+# synthetic 755
+# shakes 819920
+# femnist 9437886
+# Sent140: 800002
+# reddit 556328
+grad_var = 5  # 梯度方差，可调
+clipbound = 20  # 初始梯度裁剪上界， 可调
+redcu_ratio = 0.8  # 衰减率
+model_para_num = 9437886 #\
+L_smooth = 0.0001  # 光滑度，可调
+inital_loss_bound = 5.  # 初始损失函数上界，可调
+n2s = 0.8  # 噪声与信号比
+style = 'sample'  # 差分隐私对象，另一种为'client'
+beta = 2. # 单个用户的分布与全体分布的差异
+tau_C = 30 # 并发数
+K = 10 # 聚合用户数量
+batch_size = 64
+Itrs = 0
+
+def _mapa_lr_Itrs(grad_var =5, clipbound=20, redcu_ratio=0.8, L_smooth=0.03, n2s=0.8, model_para_num=975886,
+                  inital_loss_bound=5, beta=2, tau_C=50, K=20, batch_size=32):
+    Delta_sig_tau = grad_var**2 / batch_size + model_para_num * (n2s * clipbound )**2 / (batch_size * tau_C) + clipbound**2
+    Delta_b_K = grad_var**2/ batch_size +2*beta**2 + model_para_num * (n2s * clipbound )**2 / (batch_size * K)
+    gamma_1 = Delta_b_K * K**2/ (Delta_sig_tau * tau_C**2 * L_smooth)
+    gamma_2 = (redcu_ratio * clipbound)**2/(8 * L_smooth * Delta_b_K)
+    Stage_lr = min(gamma_1, gamma_2)
+    Stage_Itrs = max(np.ceil(8 * inital_loss_bound / (Stage_lr * redcu_ratio**2 * clipbound)), 1)
+    return Stage_lr, Stage_Itrs
+
+# Itrs_stage_list, Lr_stage_list, clipbound_list = [], [], []
+# while Itrs <= 3000:
+#     Stage_lr, Stage_Itrs = _mapa_lr_Itrs(grad_var, clipbound, redcu_ratio, L_smooth, n2s, model_para_num,inital_loss_bound, beta, tau_C, K, batch_size)
+#     Itrs += Stage_Itrs
+#     clipbound_list.append(clipbound)
+#     clipbound *= redcu_ratio
+#     Itrs_stage_list.append(Stage_Itrs)
+#     Lr_stage_list.append(Stage_lr)
+#
+# print('各阶段迭代次数为', Itrs_stage_list)
+# print('各阶段学习率为', Lr_stage_list)
+# print('各阶段梯度裁剪为', clipbound_list)
+
+fig=plt.figure(figsize=(11,4),dpi=100)
+grid = plt.GridSpec(2, 4, wspace=0.5, hspace=0.4)
+
+ylim = [0.0846,0.0848]
+plt.subplot(grid[0,0])
+Stage_lr_list = []
+grad_var_list = [1,5,10,20,30,40,50]
+for grad_var in grad_var_list:
+    Stage_lr, _ = _mapa_lr_Itrs(grad_var=grad_var)
+    Stage_lr_list.append(Stage_lr)
+plt.plot(grad_var_list, Stage_lr_list)
+# plt.ylim(ylim)
+plt.grid(axis='y')
+plt.title('Gradient Variance')
+plt.legend(['$\sigma$'], fontsize=12, loc=3)
+
+plt.subplot(grid[0,1])
+Stage_lr_list = []
+clipbound_list = [1,2,3,4,5,10,20,30,40,50]
+for clipbound in clipbound_list:
+    Stage_lr, _ = _mapa_lr_Itrs(clipbound=clipbound)
+    Stage_lr_list.append(Stage_lr)
+# plt.axhline(y=0.08465, xmin=0, xmax=50, color='lightgrey')
+# plt.axhline(y=0.08470, xmin=0, xmax=50, color='lightgrey')
+# plt.axhline(y=0.08475, xmin=0, xmax=50, color='lightgrey')
+plt.plot(clipbound_list, Stage_lr_list, label='c')
+# plt.ylim(ylim)
+# plt.yticks([])
+plt.grid(axis='y')
+plt.title('Clipping Bound')
+plt.legend(fontsize=12, loc=3)
+
+plt.subplot(grid[0,2])
+Stage_lr_list = []
+inital_loss_bound_list = [1, 5, 10, 20, 30, 40, 50, 80, 100]
+for inital_loss_bound in inital_loss_bound_list:
+    Stage_lr, _ = _mapa_lr_Itrs(inital_loss_bound=inital_loss_bound)
+    Stage_lr_list.append(Stage_lr)
+# plt.axhline(y=0.08465, xmin=0, xmax=100, color='lightgrey')
+# plt.axhline(y=0.08470, xmin=0, xmax=100, color='lightgrey')
+# plt.axhline(y=0.08475, xmin=0, xmax=100, color='lightgrey')
+plt.plot(inital_loss_bound_list, Stage_lr_list, label='$\Gamma$')
+# plt.ylim(ylim)
+# plt.yticks([])
+
+plt.grid(axis='y')
+plt.title('Initial Loss')
+plt.legend(fontsize=12,loc=3)
+
+plt.subplot(grid[0,3])
+Stage_lr_list = []
+beta_list = [1, 5, 10, 20, 30, 40, 50]
+for beta in beta_list:
+    Stage_lr, _ = _mapa_lr_Itrs(beta=beta)
+    Stage_lr_list.append(Stage_lr)
+# plt.axhline(y=0.08465, xmin=0, xmax=50, color='lightgrey')
+# plt.axhline(y=0.08470, xmin=0, xmax=50, color='lightgrey')
+# plt.axhline(y=0.08475, xmin=0, xmax=50, color='lightgrey')
+plt.plot(beta_list, Stage_lr_list, label='$\\beta$')
+# plt.ylim(ylim)
+# plt.yticks([])
+
+plt.grid(axis='y')
+plt.title('Data Heterogeneity')
+plt.legend(fontsize=12, loc=3)
+
+plt.subplot(grid[1,0])
+Stage_lr_list = []
+tau_C_list = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110,150,200,300]
+for tau_C in tau_C_list:
+    Stage_lr, _ = _mapa_lr_Itrs(tau_C=tau_C)
+    Stage_lr_list.append(Stage_lr)
+plt.plot(tau_C_list, Stage_lr_list)
+# plt.ylim([0.084, 0.086])
+plt.title('Concurrency Number')
+plt.legend(['$\\tau_C$'], fontsize=12, loc=2)
+
+plt.subplot(grid[1,1])
+Stage_lr_list = []
+K_list = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,120]
+for K in K_list:
+    Stage_lr, _ = _mapa_lr_Itrs(K=K)
+    Stage_lr_list.append(Stage_lr)
+plt.plot(K_list, Stage_lr_list)
+plt.legend(['K'])
+plt.title('Aggregate Number')
+
+plt.subplot(grid[1,2])
+Stage_lr_list = []
+batch_size_list = [8, 16, 32, 64, 128, 256]
+for batch_size in batch_size_list:
+    Stage_lr, _ = _mapa_lr_Itrs(batch_size=batch_size)
+    Stage_lr_list.append(Stage_lr)
+plt.plot(batch_size_list, Stage_lr_list)
+plt.legend(['b'])
+plt.title('Batch Size')
+
+plt.subplot(grid[1,3])
+Stage_lr_list = []
+L_smooth_list = [0.0001, 0.001, 0.01, 0.1]
+for L_smooth in L_smooth_list:
+    Stage_lr, _ = _mapa_lr_Itrs(L_smooth=L_smooth)
+    Stage_lr_list.append(Stage_lr)
+plt.plot(L_smooth_list, Stage_lr_list)
+plt.legend(['L'], loc=2)
+plt.title('Gradient Smooth')
+plt.grid(axis='y')
+
+plt.savefig('para_sensitivity.pdf', dpi=1020)
+plt.show()

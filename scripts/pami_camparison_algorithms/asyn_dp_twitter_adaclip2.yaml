@@ -1,0 +1,51 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 5
+federate:
+  mode: standalone
+  total_round_num: 2000
+  client_num: 1000
+  sample_client_num: 150
+  merge_test_data: True
+#  share_local_model: True
+#  online_aggr: True
+data:
+  root: data/
+  type: twitter
+#  subsample: 0.005
+dataloader:
+  batch_size: 5
+model:
+  type: lr
+  out_channels: 2
+  dropout: 0.0
+train:
+  local_update_steps: 1
+  optimizer:
+    lr: 0.01
+    weight_decay: 0.0
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: nlptrainer
+eval:
+  freq: 50
+  metrics: ['acc', 'correct', 'f1']
+#  split: [ 'train' ]
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 100 # 9*6
+  staleness_toleration: 1000
+adaclip2:
+  use: True
+  quatile: 0.3  # 梯度裁剪与梯度大小比例
+  c: 0.3  # 隐私预算分配
+  clipbound: 0.01  # 梯度裁剪大小
+  n2s: 0.8 # 噪声与信号比
+  clipbound_us: 'Lin' # 梯度裁剪更新方式，可选'Geo'

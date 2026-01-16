@@ -6,7 +6,8 @@ seed: 12345
 federate:
   mode: standalone
   total_round_num: 100
-  sample_client_rate: 0.1
+#  sample_client_rate: 0.01
+  client_num: 18
   make_global_eval: True
   merge_test_data: True
   merge_val_data: True
@@ -18,7 +19,7 @@ data:
   root: data/
   type: femnist
   splits: [0.6,0.2,0.2]
-  subsample: 0.05
+  subsample: 0.01
   transform: [['ToTensor'], ['Normalize', {'mean': [0.9637], 'std': [0.1592]}]]
 dataloader:
   batch_size: 10

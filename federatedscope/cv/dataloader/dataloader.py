@@ -45,4 +45,5 @@ def load_cv_dataset(config=None):
     for client_idx in range(1, client_num + 1):
         data_dict[client_idx] = dataset[client_idx - 1]
 
+
     return data_dict, config

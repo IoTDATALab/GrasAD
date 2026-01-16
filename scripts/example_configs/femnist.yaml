@@ -1,17 +1,24 @@
 use_gpu: True
-device: 0
+device: 1
 early_stop:
-  patience: 5
+  patience: 0
 seed: 12345
 federate:
   mode: standalone
-  total_round_num: 300
-  sample_client_rate: 0.2
+  total_round_num: 200
+  merge_test_data: True
+  client_num: 18
+wandb:
+  use: False
+  name_project: femnist-usrsel-test
+  name_user: gogll
+  online_track: True
+  client_train_info: True
 data:
   root: data/
   type: femnist
   splits: [0.6,0.2,0.2]
-  subsample: 0.05
+#  subsample: 0.01
   transform: [['ToTensor'], ['Normalize', {'mean': [0.9637], 'std': [0.1592]}]]
 dataloader:
   batch_size: 10
@@ -26,11 +33,35 @@ train:
     lr: 0.01
     weight_decay: 0.0
 grad:
-  grad_clip: 5.0
+  grad_clip: 4.0
 criterion:
   type: CrossEntropyLoss
 trainer:
   type: cvtrainer
 eval:
-  freq: 10
+  freq: 20
   metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  min_received_rate: 0.1
+  staleness_toleration: 30
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+usrsele:
+  use: False
+  strategy: 'fast' # 三种选择，fast, combi, coor_group
+  factor: 0.8 # 用户抽选比例
+usrsele_compa_hfl:
+  use: False
+  factor: 0.6
+usrsele_compa_schandagg:
+  use: False
+  gamma: 1.2
+usrsele_compa_freqandage:
+  use: False
+  factor: 0.6
+  gamma: 1.2
+usrsele_compa_kafl:
+  use: False
+  rho: 0.5

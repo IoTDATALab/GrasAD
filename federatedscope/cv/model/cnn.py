@@ -148,7 +148,7 @@ class VGG11(Module):
         self.maxpool = MaxPool2d(2)
 
         self.fc1 = Linear(
-            (h // 2 // 2 // 2 // 2 // 2) * (w // 2 // 2 // 2 // 2 // 2) * 512,
+            (h // 2 // 2 // 2 // 2 //2) * (w // 2 // 2 // 2 // 2//2) * 512,
             hidden)
         self.fc2 = Linear(hidden, hidden)
         self.fc3 = Linear(hidden, class_num)
@@ -172,13 +172,13 @@ class VGG11(Module):
         x = self.maxpool(x)
 
         x = self.relu(self.bn6(self.conv6(x)))
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
 
         x = self.relu(self.bn7(self.conv7(x)))
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
 
         x = self.relu(self.bn8(self.conv8(x)))
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
 
         x = Flatten()(x)
         x = F.dropout(x, p=self.dropout, training=self.training)

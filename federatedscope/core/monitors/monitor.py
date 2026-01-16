@@ -269,7 +269,7 @@ class Monitor(object):
 
     def save_formatted_results(self,
                                formatted_res,
-                               save_file_name="eval_results.log"):
+                               save_file_name="celeba_nondp.log"):
         """
         Save formatted results to a file.
         """
@@ -308,7 +308,7 @@ class Monitor(object):
 
             from federatedscope.core.auxiliaries.logging import \
                 logfile_2_wandb_dict
-            with open(os.path.join(self.outdir, "eval_results.log"),
+            with open(os.path.join(self.outdir, "celeba_nondp.log"),
                       "r") as exp_log_f:
                 # track the prediction related performance
                 all_log_res, exp_stop_normal, last_line, log_res_best = \

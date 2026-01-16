@@ -165,12 +165,12 @@ def init_wandb(cfg):
 
 def logfile_2_wandb_dict(exp_log_f, raw_out=True):
     """
-        parse the logfiles [exp_print.log, eval_results.log] into
+        parse the logfiles [exp_print.log, celeba_nondp.log] into
         wandb_dict that contains non-nested dicts
 
     :param exp_log_f: opened exp_log file
     :param raw_out: True indicates "exp_print.log", otherwise indicates
-    "eval_results.log",
+    "celeba_nondp.log",
         the difference is whether contains the logger header such as
         "2022-05-02 16:55:02,843 (client:197) INFO:"
 

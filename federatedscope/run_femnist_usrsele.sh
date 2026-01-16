@@ -1,0 +1,1 @@
+python /newhome/liyanan/projects/FS/federatedscope/main.py --cfg /newhome/liyanan/projects/FS/scripts/noniidagg_algorithms/femnist0.yaml

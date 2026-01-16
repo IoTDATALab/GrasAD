@@ -71,17 +71,53 @@ def dirichlet_distribution_noniid_slice(label,
             idx_k = np.where(label == k)[0]
             np.random.shuffle(idx_k)
             prop = np.random.dirichlet(np.repeat(alpha, client_num))
-            # prop = np.array([
-            #    p * (len(idx_j) < num / client_num)
-            #    for p, idx_j in zip(prop, idx_slice)
-            # ])
-            # prop = prop / sum(prop)
             prop = (np.cumsum(prop) * len(idx_k)).astype(int)[:-1]
             idx_slice = [
                 idx_j + idx.tolist()
                 for idx_j, idx in zip(idx_slice, np.split(idx_k, prop))
             ]
-            size = min([len(idx_j) for idx_j in idx_slice])
+
+            # 检查是否是最后一个类别
+            if k == classes - 1:
+                # 检查是否存在空元素
+                empty_indices = [i for i, idx in enumerate(idx_slice) if len(idx) == 0]
+
+                # 如果有空元素
+                if empty_indices:
+                    # 从后往前找有足够样本的客户端
+                    donor_indices = []
+                    for i in range(client_num - 1, -1, -1):
+                        if i not in empty_indices and len(idx_slice[i]) >= 4:
+                            donor_indices.append(i)
+                            # 找到足够的供体即可停止
+                            if len(donor_indices) >= len(empty_indices):
+                                break
+
+                    # 确保有足够的供体
+                    if len(donor_indices) < len(empty_indices):
+                        # 如果供体不足，继续下一轮循环
+                        break
+
+                    # 从供体转移样本到空客户端
+                    for empty_idx, donor_idx in zip(empty_indices, donor_indices):
+                        # 从供体随机选择2个样本
+                        if len(idx_slice[donor_idx]) >= 4:
+                            # 随机选择2个不同的索引
+                            transfer_indices = np.random.choice(
+                                len(idx_slice[donor_idx]), size=2, replace=False
+                            )
+                            # 提取要转移的样本（先排序再反向，确保按正确顺序移除）
+                            sorted_indices = sorted(transfer_indices, reverse=True)
+                            samples_to_transfer = [idx_slice[donor_idx][i] for i in sorted_indices]
+                            # 从供体移除样本
+                            for idx in sorted_indices:
+                                if idx < len(idx_slice[donor_idx]):  # 确保索引有效
+                                    idx_slice[donor_idx].pop(idx)
+                            # 添加到空客户端
+                            idx_slice[empty_idx].extend(samples_to_transfer)
+
+
+        size = min([len(idx_j) for idx_j in idx_slice])
     for i in range(client_num):
         np.random.shuffle(idx_slice[i])
     return idx_slice

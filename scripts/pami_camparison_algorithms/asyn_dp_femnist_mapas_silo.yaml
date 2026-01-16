@@ -1,0 +1,70 @@
+use_gpu: True
+device: 0
+early_stop:
+  patience: 0
+seed: 2
+federate:
+  mode: standalone
+  total_round_num: 3000
+  sample_client_num: 30
+  merge_test_data: False
+  share_local_model: False
+  client_num: 100
+#  sampler: 'uniform'
+#  resource_info_file: 'client_device_capacity'
+data:
+  root: data/
+  type: femnist
+  args: [{'download': True}]
+  splits: [0.8,0.0,0.2]
+#  subsample: 0.2
+  transform: [['ToTensor'], ['Normalize', {'mean': [0.4914], 'std': [0.2470]}]]
+#  splitter: 'lda'
+#  splitter_args: [{'alpha': 0.2}]
+dataloader:
+  batch_size: 64
+model:
+  type: vgg11
+#  hidden: 512
+  out_channels: 62
+train:
+  local_update_steps: 1
+  batch_or_epoch: batch
+  optimizer:
+    lr: 1
+    weight_decay: 0.0
+grad:
+  grad_clip: -1
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: cvtrainer
+eval:
+  freq: 50
+  metrics: ['acc', 'correct']
+  best_res_update_round_wise_key: 'test_acc'
+asyn:
+  use: True
+  overselection: False
+  staleness_discount_factor: 0.2
+  aggregator: 'goal_achieved'
+  broadcast_manner: 'after_receiving'
+  min_received_num: 30
+  staleness_toleration: 1000
+mapa:
+  use: True
+  grad_var: 5. # 梯度方差，可调
+  clipbound: 20. # 初始梯度裁剪上界， 可调
+  redcu_ratio: 0.8 # 衰减率
+  L_smooth: 0.0004 # 光滑度，可调
+  inital_loss_bound: 5. # 初始损失函数上界，可调
+  n2s: 0.8 # 噪声与信号比
+  beta: 2. # 用户分布与全体分布的差异
+  style: 'sample' # 差分隐私对象，另一种为'client'
+wandb:
+  use: True
+  name_user: gogll2218
+  name_project: femnist_425_silo
+  online_track: True
+  client_train_info: True
+

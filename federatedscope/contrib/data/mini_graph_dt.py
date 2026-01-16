@@ -6,7 +6,7 @@ from federatedscope.register import register_data
 # Run with mini_graph_dt:
 # python federatedscope/main.py --cfg \
 # federatedscope/gfl/baseline/mini_graph_dc/fedavg.yaml --client_cfg \
-# federatedscope/gfl/baseline/mini_graph_dc/fedavg_per_client.yaml
+# federatedscope/gfl/baseline/mini_graph_dc/femnist_per_client.yaml
 # Test Accuracy: ~0.7
 
 

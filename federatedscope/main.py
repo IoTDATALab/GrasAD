@@ -1,8 +1,9 @@
 import os
 import sys
 
-DEV_MODE = False  # simplify the federatedscope re-setup everytime we change
+DEV_MODE = True  # simplify the federatedscope re-setup everytime we change
 # the source codes of federatedscope
+os.environ["WANDB_API_KEY"] = '520da4246c7917e33fd708435ce9642fecf3c68f'
 if DEV_MODE:
     file_dir = os.path.join(os.path.dirname(__file__), '..')
     sys.path.append(file_dir)
@@ -47,6 +48,14 @@ if __name__ == '__main__':
                                   client_cfgs=client_cfgs)
     init_cfg.merge_from_other_cfg(modified_cfg)
 
+    # 生成每个用户不同的batch_size的配置文件yaml，其中0.2表示从用户中选取20%数据作为batch_size
+    # train_num = []
+    # for i in range(1,len(data)):
+    #     train_num.append(len(list(data[i].train_data)))
+    # with open('/home/pkl2/lyn/FederatedScope/scripts/pami_camparison_algorithms/users_dataset_size.yaml', 'a+') as fl:
+    #     for i in range(len(train_num)):
+    #         fl.write('client_{}:\n  dataloader:\n    batch_size: {}\n'.format(i+1, int(numpy.ceil(0.2* train_num[i]))))
+    # fl.close()
     init_cfg.freeze()
 
     runner = get_runner(data=data,

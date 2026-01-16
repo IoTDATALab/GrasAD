@@ -45,9 +45,9 @@ class LEAF_SYNTHETIC(LEAF):
                  root,
                  name='synthetic',
                  n_components=3,
-                 n_tasks=300,
-                 n_test=5000,
-                 n_val=5000,
+                 n_tasks=1000,
+                 n_test=500,
+                 n_val=500,
                  dim=150,
                  noise_level=0.1,
                  alpha=0.4,
@@ -155,6 +155,20 @@ class LEAF_SYNTHETIC(LEAF):
                           component_id]
             noise = np.random.normal(size=latent_variable_count[component_id],
                                      scale=self.noise_level)
+            # sg = sigmoid(y_hat + noise)
+            # for index in range(len(sg)):
+            #     if sg[index] < 0.2:
+            #         sg[index] = int(0)
+            #     elif sg[index] < 0.4:
+            #         sg[index] = int(1)
+            #     elif sg[index] < 0.6:
+            #         sg[index] = int(2)
+            #     elif sg[index] < 0.8:
+            #         sg[index] = int(3)
+            #     else:
+            #         sg[index] = int(4)
+            # y[current_index:current_index +
+            #   latent_variable_count[component_id]] = sg
             y[current_index:current_index +
               latent_variable_count[component_id]] = np.round(
                   sigmoid(y_hat + noise)).astype(int)

@@ -15,8 +15,12 @@ Algorithm names include usrsele_compa_grasad, usrsele_compa_aouprior, usrsele_co
 For example, when using the GrasAD algorithm, you must set:
 
 asy:
+
 use: True
+
 usrsele_compa_hfl:
+
 use: True
+
 # Acknowledgement
 We would like to thank the authors for releasing the public repository: FederatedScope-LLM.
